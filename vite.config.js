@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: process.env.PORT || 4000,
-    host: true // This is needed to expose the server to external networks
+    host: true, // This is needed to expose the server to external networks
+    allowedHosts: ['email-service-92ek.onrender.com']
   }
 })

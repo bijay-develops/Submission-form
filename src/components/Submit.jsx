@@ -6,60 +6,75 @@ const sendEmail = async (formData) => {
   const PUBLIC_KEY = "stVPgc3mHG7rIAuBM";
 
   try {
-    // Initialize EmailJS with the public key
+    console.log('Starting email submission process...');
+    
+    // Initialize EmailJS
     emailjs.init(PUBLIC_KEY);
+    console.log('EmailJS initialized');
 
+    // Format the subjects list
+    const selectedSubjects = Object.entries(formData.subjects)
+      .filter(([_, selected]) => selected)
+      .map(([subject]) => subject)
+      .join(', ');
+
+    console.log('Creating email template parameters...');
     const templateParams = {
-      to_name: "Admin",
-      to_email: "bijaybkcollegetools@gmail.com",
       from_name: `${formData.firstName} ${formData.lastName}`,
-      from_email: formData.email,
-      subject: "New Form Submission",
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      email: formData.email,
-      contact: formData.contact,
-      gender: formData.gender,
-      selected_option: formData.selectedOption,
-      subjects: Object.entries(formData.subjects)
-        .filter(([_, selected]) => selected)
-        .map(([subject]) => subject)
-        .join(', '),
-      url: formData.url,
-      about: formData.about,
-      message: `
+      reply_to: formData.email,
+      subject: `New Form Submission from ${formData.firstName} ${formData.lastName}`,
+      content: `
+Personal Information:
+-------------------
 First Name: ${formData.firstName}
 Last Name: ${formData.lastName}
 Email: ${formData.email}
 Contact: ${formData.contact}
 Gender: ${formData.gender}
-Selected Option: ${formData.selectedOption}
-Subjects: ${Object.entries(formData.subjects)
-  .filter(([_, selected]) => selected)
-  .map(([subject]) => subject)
-  .join(', ')}
+
+Academic Details:
+---------------
+Selected Subjects: ${selectedSubjects}
+Specialization: ${formData.selectedOption || 'None selected'}
+
+Additional Information:
+--------------------
 URL: ${formData.url}
 About: ${formData.about}
+
+Submission Time: ${new Date().toLocaleString()}
       `
     };
 
-    console.log('Sending email with params:', templateParams);
+    console.log('Template parameters:', templateParams);
 
+    console.log('Attempting to send email...');
     const response = await emailjs.send(
       SERVICE_ID,
       TEMPLATE_ID,
       templateParams
     );
 
-    console.log('EmailJS Response:', response);
+    console.log('Email API Response:', response);
 
     if (response.status === 200) {
-      return { success: true, message: "Form submitted successfully!" };
+      console.log('Email sent successfully!');
+      return { 
+        success: true, 
+        message: "Form submitted successfully! The admin will review your submission." 
+      };
     } else {
-      throw new Error("Failed to send email");
+      console.error('Unexpected response status:', response.status);
+      throw new Error(`Failed to send email: Status ${response.status}`);
     }
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error('Detailed error information:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      text: error.text
+    });
+    
     return { 
       success: false, 
       message: `Failed to submit form: ${error.text || error.message || 'Unknown error occurred'}` 

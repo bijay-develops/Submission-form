@@ -73,7 +73,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Form in React</h1>
+      <h1>Email service using Form</h1>
       {submitMessage && (
         <div className={`message ${submitMessage.includes('success') ? 'success' : 'error'}`}>
           {submitMessage}
